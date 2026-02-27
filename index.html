@@ -1,0 +1,1952 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HackLearn — Elite Learning Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+/* ===== CSS VARIABLES ===== */
+:root {
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #0f1629;
+  --bg-card: #141c2e;
+  --bg-card-hover: #1a2540;
+  --border: #1e2d4a;
+  --border-bright: #2d4070;
+  --accent: #00d4ff;
+  --accent2: #7c3aed;
+  --accent3: #10b981;
+  --accent-glow: rgba(0,212,255,0.15);
+  --text-primary: #e2e8f0;
+  --text-secondary: #8892a4;
+  --text-muted: #4a5568;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --success: #10b981;
+  --sidebar-width: 260px;
+  --header-height: 64px;
+  --radius: 10px;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Syne', sans-serif;
+}
+
+[data-theme="light"] {
+  --bg-primary: #f0f4f8;
+  --bg-secondary: #e8eef7;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f5f8ff;
+  --border: #d1dae8;
+  --border-bright: #a0b4cc;
+  --accent: #0080cc;
+  --accent-glow: rgba(0,128,204,0.1);
+  --text-primary: #1a2035;
+  --text-secondary: #4a5568;
+  --text-muted: #8892a4;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+
+/* ===== LAYOUT ===== */
+#app { display: flex; min-height: 100vh; }
+
+/* ===== SIDEBAR ===== */
+#sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  z-index: 100;
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  padding: 20px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+
+.logo-text {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.logo-text span { color: var(--accent); }
+
+.sidebar-nav { padding: 12px 0; flex: 1; }
+
+.nav-section-title {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  padding: 8px 18px 4px;
+  font-family: var(--font-mono);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  cursor: pointer;
+  border-radius: 0;
+  transition: all 0.15s;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-left: 3px solid transparent;
+  text-decoration: none;
+  position: relative;
+}
+
+.nav-item:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-left-color: var(--border-bright);
+}
+
+.nav-item.active {
+  background: var(--bg-card);
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+
+.nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+.nav-badge {
+  margin-left: auto;
+  background: var(--accent2);
+  color: #fff;
+  font-size: 0.65rem;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+}
+
+.sidebar-footer {
+  padding: 16px 18px;
+  border-top: 1px solid var(--border);
+}
+
+.lang-selector-mini {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  width: 100%;
+  transition: all 0.15s;
+}
+
+.lang-selector-mini:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ===== MAIN CONTENT ===== */
+#main {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ===== HEADER ===== */
+#header {
+  height: var(--header-height);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(10px);
+}
+
+.search-bar {
+  flex: 1;
+  max-width: 400px;
+  position: relative;
+}
+
+.search-bar input {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px 8px 36px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  transition: all 0.15s;
+  outline: none;
+}
+
+.search-bar input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.search-bar .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; }
+
+.header-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+  text-decoration: none;
+}
+
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:hover { background: #00b8e0; box-shadow: 0 0 20px var(--accent-glow); }
+.btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-sm { padding: 5px 10px; font-size: 0.75rem; }
+.btn-icon { padding: 8px; width: 36px; height: 36px; justify-content: center; }
+
+/* ===== PAGES ===== */
+.page { display: none; padding: 28px 28px 60px; animation: fadeIn 0.2s ease; }
+.page.active { display: block; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ===== HERO ===== */
+.hero {
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 48px 40px;
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%; right: -10%;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(0,212,255,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent-glow);
+  border: 1px solid rgba(0,212,255,0.3);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+}
+
+.hero h1 {
+  font-size: 2.4rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero p { color: var(--text-secondary); font-size: 1rem; max-width: 500px; line-height: 1.6; margin-bottom: 24px; }
+
+.hero-stats { display: flex; gap: 32px; flex-wrap: wrap; }
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-num { font-size: 1.4rem; font-weight: 800; color: var(--accent); font-family: var(--font-mono); }
+.stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+/* ===== SECTION ===== */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.section-title .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+
+/* ===== CARDS GRID ===== */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.card:hover { background: var(--bg-card-hover); border-color: var(--border-bright); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+.card:hover::before { opacity: 1; }
+
+.card-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  font-family: var(--font-mono);
+}
+
+.badge-py { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+.badge-js { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+.badge-rust { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+.badge-go { background: rgba(0,212,255,0.15); color: var(--accent); border: 1px solid rgba(0,212,255,0.3); }
+.badge-cpp { background: rgba(124,58,237,0.15); color: #a78bfa; border: 1px solid rgba(124,58,237,0.3); }
+.badge-cs { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+.badge-pdf { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+.badge-md { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+
+.card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; }
+.card p { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px; }
+
+.card-meta { display: flex; align-items: center; gap: 12px; font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono); }
+.card-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-muted); }
+
+.card-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+
+/* ===== FILE VIEWER ===== */
+#viewer-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.15s ease;
+}
+
+#viewer-overlay.open { display: flex; align-items: stretch; }
+
+#viewer-panel {
+  width: 100%;
+  max-width: 960px;
+  margin: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  max-height: 92vh;
+  overflow: hidden;
+}
+
+.viewer-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+
+.viewer-title { font-weight: 700; font-size: 0.95rem; flex: 1; }
+
+.viewer-tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.viewer-tab {
+  padding: 5px 14px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+  font-family: var(--font-mono);
+}
+
+.viewer-tab.active { background: var(--bg-card); color: var(--accent); }
+
+.viewer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  font-family: var(--font-sans);
+  line-height: 1.7;
+  font-size: 0.9rem;
+}
+
+.viewer-body.code-view {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  padding: 0;
+  background: #1a1f2e;
+}
+
+.viewer-body.code-view pre {
+  margin: 0;
+  padding: 24px;
+  min-height: 100%;
+  tab-size: 2;
+}
+
+/* Markdown Styles */
+.md-content h1, .md-content h2, .md-content h3, .md-content h4 {
+  font-family: var(--font-sans);
+  margin: 1.5em 0 0.5em;
+  line-height: 1.2;
+}
+.md-content h1 { font-size: 1.8rem; color: var(--accent); }
+.md-content h2 { font-size: 1.3rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.md-content h3 { font-size: 1.1rem; }
+.md-content p { margin-bottom: 1em; }
+.md-content code { font-family: var(--font-mono); background: var(--bg-secondary); padding: 2px 6px; border-radius: 4px; font-size: 0.85em; color: var(--accent); }
+.md-content pre { background: #1a1f2e; border-radius: 8px; padding: 16px; margin: 1em 0; overflow-x: auto; border: 1px solid var(--border); }
+.md-content pre code { background: transparent; padding: 0; color: inherit; }
+.md-content blockquote { border-left: 3px solid var(--accent); padding: 8px 16px; margin: 1em 0; background: var(--accent-glow); border-radius: 0 8px 8px 0; color: var(--text-secondary); }
+.md-content ul, .md-content ol { margin: 1em 0; padding-left: 1.5em; }
+.md-content li { margin-bottom: 0.3em; }
+.md-content a { color: var(--accent); }
+.md-content table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+.md-content th { background: var(--bg-secondary); padding: 8px 12px; text-align: left; border: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.8rem; }
+.md-content td { padding: 8px 12px; border: 1px solid var(--border); font-size: 0.85rem; }
+.md-content img { max-width: 100%; border-radius: 8px; }
+.md-content hr { border: none; border-top: 1px solid var(--border); margin: 1.5em 0; }
+
+/* ===== UPLOAD ZONE ===== */
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--bg-card);
+  margin-bottom: 24px;
+}
+
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+}
+
+.upload-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.upload-zone h3 { font-size: 1rem; margin-bottom: 6px; }
+.upload-zone p { font-size: 0.8rem; color: var(--text-muted); }
+
+/* ===== SETTINGS PAGE ===== */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) { .settings-grid { grid-template-columns: 1fr; } }
+
+.settings-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.settings-card h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+.setting-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.setting-item:last-child { border-bottom: none; }
+
+.setting-label { font-size: 0.82rem; color: var(--text-secondary); }
+.setting-label strong { display: block; font-size: 0.85rem; color: var(--text-primary); }
+
+/* ===== TOGGLE ===== */
+.toggle {
+  width: 44px; height: 24px;
+  background: var(--border);
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.toggle.on { background: var(--accent); }
+.toggle::after {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  background: white;
+  border-radius: 50%;
+  top: 3px; left: 3px;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.toggle.on::after { transform: translateX(20px); }
+
+/* ===== SELECT ===== */
+select {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  padding: 6px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s;
+}
+select:focus { border-color: var(--accent); }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  width: 90%;
+  max-width: 500px;
+  animation: fadeIn 0.15s ease;
+}
+
+.modal h2 { font-size: 1.1rem; margin-bottom: 8px; }
+.modal p { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 20px; }
+
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.5px; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  padding: 9px 12px;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  outline: none;
+  transition: all 0.15s;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.form-group textarea { min-height: 80px; resize: vertical; }
+
+/* ===== LANGUAGE MODAL ===== */
+.lang-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.lang-option {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.lang-option:hover { border-color: var(--accent); background: var(--accent-glow); }
+.lang-option.selected { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); }
+.lang-flag { font-size: 1.2rem; }
+
+/* ===== TOAST ===== */
+#toast-container {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 0.82rem;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  animation: slideIn 0.2s ease;
+  min-width: 260px;
+}
+
+.toast.success { border-left: 3px solid var(--success); }
+.toast.error { border-left: 3px solid var(--danger); }
+.toast.info { border-left: 3px solid var(--accent); }
+
+@keyframes slideIn { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: translateX(0); } }
+
+/* ===== TAGS ===== */
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.tag {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+/* ===== PROGRESS BAR ===== */
+.progress-bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text-muted);
+}
+.empty-icon { font-size: 3rem; margin-bottom: 12px; }
+.empty-state h3 { font-size: 1rem; color: var(--text-secondary); margin-bottom: 6px; }
+.empty-state p { font-size: 0.8rem; }
+
+/* ===== PDF EMBED ===== */
+.pdf-embed {
+  width: 100%; height: 100%;
+  min-height: 600px;
+  border: none;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  #sidebar { transform: translateX(-100%); }
+  #sidebar.open { transform: translateX(0); }
+  #main { margin-left: 0; }
+  .hero h1 { font-size: 1.6rem; }
+  .cards-grid { grid-template-columns: 1fr; }
+  #viewer-panel { margin: 8px; max-height: 98vh; border-radius: 12px; }
+}
+
+/* ===== HAMBURGER ===== */
+#menu-btn {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 18px;
+}
+
+@media (max-width: 768px) { #menu-btn { display: flex; align-items: center; } }
+
+.breadcrumb {
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+.breadcrumb span { color: var(--accent); }
+
+/* Stars bg */
+.stars {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.stars::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.1), transparent),
+    radial-gradient(1px 1px at 60% 10%, rgba(255,255,255,0.08), transparent),
+    radial-gradient(1px 1px at 80% 60%, rgba(255,255,255,0.1), transparent),
+    radial-gradient(2px 2px at 40% 80%, rgba(0,212,255,0.08), transparent);
+}
+
+/* Sidebar overlay for mobile */
+#sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 99;
+}
+
+@media (max-width: 768px) {
+  #sidebar-overlay.open { display: block; }
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div id="sidebar">
+  <div class="sidebar-header">
+    <a class="logo" href="#" onclick="showPage('home')">
+      <div class="logo-icon">⚡</div>
+      <span class="logo-text">Hack<span>Learn</span></span>
+    </a>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-title" data-i18n="nav_main">Main</div>
+    <a class="nav-item active" onclick="showPage('home')" data-page="home">
+      <span class="icon">🏠</span><span data-i18n="nav_home">Home</span>
+    </a>
+    <a class="nav-item" onclick="showPage('library')" data-page="library">
+      <span class="icon">📚</span><span data-i18n="nav_library">Library</span>
+      <span class="nav-badge" id="file-count-badge">0</span>
+    </a>
+    <a class="nav-item" onclick="showPage('upload')" data-page="upload">
+      <span class="icon">📤</span><span data-i18n="nav_upload">Upload Files</span>
+    </a>
+
+    <div class="nav-section-title" data-i18n="nav_categories">Categories</div>
+    <a class="nav-item" onclick="filterCategory('Python')">
+      <span class="icon">🐍</span><span>Python</span>
+    </a>
+    <a class="nav-item" onclick="filterCategory('JavaScript')">
+      <span class="icon">🟨</span><span>JavaScript</span>
+    </a>
+    <a class="nav-item" onclick="filterCategory('Rust')">
+      <span class="icon">🦀</span><span>Rust</span>
+    </a>
+    <a class="nav-item" onclick="filterCategory('Go')">
+      <span class="icon">🔵</span><span>Go</span>
+    </a>
+    <a class="nav-item" onclick="filterCategory('C++')">
+      <span class="icon">⚙️</span><span>C++</span>
+    </a>
+    <a class="nav-item" onclick="filterCategory('C#')">
+      <span class="icon">💜</span><span>C#</span>
+    </a>
+    <a class="nav-item" onclick="filterCategory('Other')">
+      <span class="icon">📁</span><span data-i18n="cat_other">Other</span>
+    </a>
+
+    <div class="nav-section-title" data-i18n="nav_tools">Tools</div>
+    <a class="nav-item" onclick="showPage('settings')" data-page="settings">
+      <span class="icon">⚙️</span><span data-i18n="nav_settings">Settings</span>
+    </a>
+    <a class="nav-item" onclick="openLangModal()">
+      <span class="icon">🌐</span><span data-i18n="nav_language">Language</span>
+    </a>
+    <a class="nav-item" onclick="exportData()">
+      <span class="icon">💾</span><span data-i18n="nav_export">Export Data</span>
+    </a>
+    <a class="nav-item" onclick="document.getElementById('import-input').click()">
+      <span class="icon">📥</span><span data-i18n="nav_import">Import Data</span>
+    </a>
+    <input type="file" id="import-input" accept=".json" style="display:none" onchange="importData(this)">
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="lang-selector-mini" onclick="openLangModal()">
+      🌐 <span id="current-lang-label">English</span> ▾
+    </button>
+  </div>
+</div>
+
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- Main -->
+<div id="main">
+  <!-- Header -->
+  <header id="header">
+    <button id="menu-btn" onclick="toggleSidebar()">☰</button>
+
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search files..." data-i18n-placeholder="search_placeholder" oninput="searchFiles(this.value)">
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" title="Toggle theme">
+        <span id="theme-icon">☀️</span>
+      </button>
+      <button class="btn btn-primary btn-sm" onclick="showPage('upload')">
+        <span>+</span><span data-i18n="btn_upload">Upload</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- HOME PAGE -->
+  <div id="page-home" class="page active">
+    <div class="hero">
+      <div class="stars"></div>
+      <div class="hero-tag">🚀 <span data-i18n="hero_tag">Educational Platform v2.0</span></div>
+      <h1 data-i18n="hero_title">Learn to Code.<br>Master the Stack.</h1>
+      <p data-i18n="hero_desc">Your private server for educational programming files. Upload, organize, and learn from structured Markdown and PDF content.</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num" id="stat-files">0</span><span class="stat-label" data-i18n="stat_files">Files</span></div>
+        <div class="stat"><span class="stat-num" id="stat-langs">0</span><span class="stat-label" data-i18n="stat_langs">Languages</span></div>
+        <div class="stat"><span class="stat-num" id="stat-types">2</span><span class="stat-label" data-i18n="stat_types">Formats</span></div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title"><div class="dot"></div><span data-i18n="sec_recent">Recent Files</span></div>
+      <button class="btn btn-ghost btn-sm" onclick="showPage('library')" data-i18n="btn_view_all">View All</button>
+    </div>
+
+    <div id="recent-grid" class="cards-grid">
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <h3 data-i18n="empty_title">No files yet</h3>
+        <p data-i18n="empty_desc">Upload your first educational file to get started</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIBRARY PAGE -->
+  <div id="page-library" class="page">
+    <div class="breadcrumb">hacklearn / <span data-i18n="nav_library">library</span></div>
+    <div class="section-header">
+      <div class="section-title"><div class="dot"></div><span id="library-title" data-i18n="lib_all">All Files</span></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="sort-select" onchange="renderLibrary()" style="font-size:0.75rem">
+          <option value="newest" data-i18n="sort_newest">Newest</option>
+          <option value="oldest" data-i18n="sort_oldest">Oldest</option>
+          <option value="name" data-i18n="sort_name">Name A–Z</option>
+          <option value="lang" data-i18n="sort_lang">Language</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="showPage('upload')">+ <span data-i18n="btn_upload">Upload</span></button>
+      </div>
+    </div>
+    <div id="library-grid" class="cards-grid"></div>
+  </div>
+
+  <!-- UPLOAD PAGE -->
+  <div id="page-upload" class="page">
+    <div class="breadcrumb">hacklearn / <span data-i18n="nav_upload">upload</span></div>
+    <h2 style="margin-bottom:20px;font-size:1.2rem" data-i18n="upload_title">Upload Educational File</h2>
+
+    <div class="upload-zone" id="drop-zone"
+      ondragover="event.preventDefault();this.classList.add('dragover')"
+      ondragleave="this.classList.remove('dragover')"
+      ondrop="handleDrop(event)"
+      onclick="document.getElementById('file-input').click()">
+      <input type="file" id="file-input" accept=".md,.pdf,.txt,.py,.js,.rs,.go,.cpp,.cs,.html,.css,.java,.rb,.php,.swift,.kt,.ts,.json,.yaml,.toml" multiple style="display:none" onchange="handleFileSelect(this)">
+      <div class="upload-icon">📂</div>
+      <h3 data-i18n="drop_title">Drop files here or click to browse</h3>
+      <p data-i18n="drop_desc">Supports: .md .pdf .txt .py .js .rs .go .cpp .cs .html .java and more</p>
+    </div>
+
+    <div id="upload-form" style="display:none">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px">
+        <h3 style="font-size:0.9rem;margin-bottom:16px" data-i18n="file_details">File Details</h3>
+        <div class="form-group">
+          <label data-i18n="lbl_title">Title</label>
+          <input type="text" id="up-title" placeholder="e.g. Python Fundamentals">
+        </div>
+        <div class="form-group">
+          <label data-i18n="lbl_desc">Description</label>
+          <textarea id="up-desc" placeholder="What will learners find in this file?"></textarea>
+        </div>
+        <div class="form-group">
+          <label data-i18n="lbl_lang">Programming Language</label>
+          <select id="up-lang">
+            <option value="Python">🐍 Python</option>
+            <option value="JavaScript">🟨 JavaScript</option>
+            <option value="TypeScript">🔷 TypeScript</option>
+            <option value="Rust">🦀 Rust</option>
+            <option value="Go">🔵 Go</option>
+            <option value="C++">⚙️ C++</option>
+            <option value="C#">💜 C#</option>
+            <option value="Java">☕ Java</option>
+            <option value="Ruby">💎 Ruby</option>
+            <option value="PHP">🐘 PHP</option>
+            <option value="Swift">🍎 Swift</option>
+            <option value="Kotlin">🎯 Kotlin</option>
+            <option value="HTML/CSS">🌐 HTML/CSS</option>
+            <option value="Shell">🐚 Shell</option>
+            <option value="Other">📁 Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label data-i18n="lbl_tags">Tags (comma separated)</label>
+          <input type="text" id="up-tags" placeholder="beginner, tutorial, oop">
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="saveFile()" data-i18n="btn_save">Save File</button>
+          <button class="btn btn-ghost" onclick="cancelUpload()" data-i18n="btn_cancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS PAGE -->
+  <div id="page-settings" class="page">
+    <div class="breadcrumb">hacklearn / <span data-i18n="nav_settings">settings</span></div>
+    <h2 style="margin-bottom:20px;font-size:1.2rem" data-i18n="settings_title">Settings</h2>
+
+    <div class="settings-grid">
+      <div class="settings-card">
+        <h3>🎨 <span data-i18n="set_appearance">Appearance</span></h3>
+        <div class="setting-item">
+          <div class="setting-label">
+            <strong data-i18n="set_dark_mode">Dark Mode</strong>
+            <span data-i18n="set_dark_desc">Use dark theme</span>
+          </div>
+          <div class="toggle on" id="dark-toggle" onclick="toggleTheme()"></div>
+        </div>
+        <div class="setting-item">
+          <div class="setting-label">
+            <strong data-i18n="set_font">Font Size</strong>
+          </div>
+          <select id="font-size-select" onchange="setFontSize(this.value)">
+            <option value="14">14px</option>
+            <option value="15" selected>15px</option>
+            <option value="16">16px</option>
+            <option value="18">18px</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <h3>🌐 <span data-i18n="set_lang">Language</span></h3>
+        <div class="setting-item">
+          <div class="setting-label">
+            <strong data-i18n="set_ui_lang">Interface Language</strong>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="openLangModal()" data-i18n="btn_change">Change</button>
+        </div>
+        <div class="setting-item">
+          <div class="setting-label">
+            <strong data-i18n="set_content_lang">Content Language</strong>
+            <span data-i18n="set_content_desc">Files shown in selected language</span>
+          </div>
+          <span style="font-size:0.75rem;font-family:var(--font-mono);color:var(--accent)" id="content-lang-label">EN</span>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <h3>🗂️ <span data-i18n="set_data">Data Management</span></h3>
+        <div class="setting-item">
+          <div class="setting-label">
+            <strong data-i18n="set_export">Export All Data</strong>
+            <span data-i18n="set_export_desc">Download as JSON backup</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="exportData()" data-i18n="btn_export">Export</button>
+        </div>
+        <div class="setting-item">
+          <div class="setting-label">
+            <strong data-i18n="set_import">Import Data</strong>
+            <span data-i18n="set_import_desc">Restore from JSON backup</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-input').click()" data-i18n="btn_import">Import</button>
+        </div>
+        <div class="setting-item">
+          <div class="setting-label">
+            <strong data-i18n="set_clear" style="color:var(--danger)">Clear All Data</strong>
+            <span data-i18n="set_clear_desc">Delete all files permanently</span>
+          </div>
+          <button class="btn btn-sm" style="background:var(--danger);color:#fff" onclick="clearAllData()" data-i18n="btn_clear">Clear</button>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <h3>ℹ️ <span data-i18n="set_about">About</span></h3>
+        <div class="setting-item">
+          <div class="setting-label"><strong>HackLearn</strong><span>Version 2.0</span></div>
+        </div>
+        <div class="setting-item">
+          <div class="setting-label"><strong data-i18n="set_storage">Storage Used</strong></div>
+          <span style="font-family:var(--font-mono);font-size:0.75rem" id="storage-size">0 KB</span>
+        </div>
+        <div class="setting-item">
+          <div class="setting-label"><strong data-i18n="set_files_count">Total Files</strong></div>
+          <span style="font-family:var(--font-mono);font-size:0.75rem" id="total-files-count">0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- File Viewer Overlay -->
+<div id="viewer-overlay" onclick="closeViewer(event)">
+  <div id="viewer-panel">
+    <div class="viewer-header">
+      <span class="viewer-title" id="viewer-title">File Viewer</span>
+      <div class="viewer-tabs" id="viewer-tabs">
+        <div class="viewer-tab active" onclick="switchViewerTab('preview')" id="tab-preview" data-i18n="tab_preview">Preview</div>
+        <div class="viewer-tab" onclick="switchViewerTab('source')" id="tab-source" data-i18n="tab_source">Source</div>
+      </div>
+      <div style="display:flex;gap:6px;margin-left:12px">
+        <button class="btn btn-ghost btn-sm" onclick="downloadCurrentFile()" title="Download">⬇</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeViewer()" title="Close">✕</button>
+      </div>
+    </div>
+    <div class="viewer-body md-content" id="viewer-body"></div>
+  </div>
+</div>
+
+<!-- Language Modal -->
+<div class="modal-overlay" id="lang-modal">
+  <div class="modal">
+    <h2>🌐 <span data-i18n="lang_select">Select Language</span></h2>
+    <p data-i18n="lang_desc">All content will be displayed in the selected language</p>
+    <div class="lang-grid" id="lang-grid">
+      <!-- filled by JS -->
+    </div>
+    <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn btn-ghost" onclick="closeLangModal()" data-i18n="btn_cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="applyLang()" data-i18n="btn_apply">Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast-container"></div>
+
+<script>
+// ===========================
+// DATA STORE
+// ===========================
+const DB_KEY = 'hacklearn_files';
+const SETTINGS_KEY = 'hacklearn_settings';
+
+let files = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+let settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+let currentFile = null;
+let currentViewerTab = 'preview';
+let filterLang = null;
+let pendingFile = null;
+let selectedLang = settings.lang || 'en';
+
+// ===========================
+// I18N
+// ===========================
+const LANGS = [
+  { code:'en', label:'English', flag:'🇬🇧' },
+  { code:'ar', label:'العربية', flag:'🇸🇦' },
+  { code:'fr', label:'Français', flag:'🇫🇷' },
+  { code:'de', label:'Deutsch', flag:'🇩🇪' },
+  { code:'es', label:'Español', flag:'🇪🇸' },
+  { code:'ru', label:'Русский', flag:'🇷🇺' },
+  { code:'zh', label:'中文', flag:'🇨🇳' },
+  { code:'ja', label:'日本語', flag:'🇯🇵' },
+  { code:'pt', label:'Português', flag:'🇧🇷' },
+  { code:'tr', label:'Türkçe', flag:'🇹🇷' },
+  { code:'it', label:'Italiano', flag:'🇮🇹' },
+  { code:'ko', label:'한국어', flag:'🇰🇷' },
+];
+
+const TRANSLATIONS = {
+  en: {
+    nav_main:'Main', nav_home:'Home', nav_library:'Library',
+    nav_upload:'Upload Files', nav_categories:'Categories', cat_other:'Other',
+    nav_tools:'Tools', nav_settings:'Settings', nav_language:'Language',
+    nav_export:'Export Data', nav_import:'Import Data',
+    hero_tag:'Educational Platform v2.0',
+    hero_title:'Learn to Code.<br>Master the Stack.',
+    hero_desc:'Your private server for educational programming files. Upload, organize, and learn from structured Markdown and PDF content.',
+    stat_files:'Files', stat_langs:'Languages', stat_types:'Formats',
+    sec_recent:'Recent Files', btn_view_all:'View All',
+    empty_title:'No files yet', empty_desc:'Upload your first educational file to get started',
+    lib_all:'All Files', sort_newest:'Newest', sort_oldest:'Oldest',
+    sort_name:'Name A–Z', sort_lang:'Language',
+    upload_title:'Upload Educational File',
+    drop_title:'Drop files here or click to browse',
+    drop_desc:'Supports: .md .pdf .txt .py .js .rs .go .cpp .cs .html .java and more',
+    file_details:'File Details', lbl_title:'Title', lbl_desc:'Description',
+    lbl_lang:'Programming Language', lbl_tags:'Tags (comma separated)',
+    btn_save:'Save File', btn_cancel:'Cancel', btn_upload:'Upload',
+    settings_title:'Settings',
+    set_appearance:'Appearance', set_dark_mode:'Dark Mode', set_dark_desc:'Use dark theme',
+    set_font:'Font Size', set_lang:'Language', set_ui_lang:'Interface Language',
+    set_content_lang:'Content Language', set_content_desc:'Files shown in selected language',
+    set_data:'Data Management', set_export:'Export All Data', set_export_desc:'Download as JSON backup',
+    set_import:'Import Data', set_import_desc:'Restore from JSON backup',
+    set_clear:'Clear All Data', set_clear_desc:'Delete all files permanently',
+    set_about:'About', set_storage:'Storage Used', set_files_count:'Total Files',
+    btn_change:'Change', btn_export:'Export', btn_import:'Import', btn_clear:'Clear',
+    tab_preview:'Preview', tab_source:'Source',
+    lang_select:'Select Language', lang_desc:'All content will be displayed in the selected language',
+    btn_apply:'Apply', search_placeholder:'Search files...',
+  },
+  ar: {
+    nav_main:'رئيسي', nav_home:'الرئيسية', nav_library:'المكتبة',
+    nav_upload:'رفع الملفات', nav_categories:'التصنيفات', cat_other:'أخرى',
+    nav_tools:'أدوات', nav_settings:'الإعدادات', nav_language:'اللغة',
+    nav_export:'تصدير البيانات', nav_import:'استيراد البيانات',
+    hero_tag:'منصة تعليمية v2.0',
+    hero_title:'تعلّم البرمجة.<br>أتقن المكدس.',
+    hero_desc:'خادمك الخاص للملفات التعليمية البرمجية. ارفع ونظّم وتعلّم من محتوى Markdown وPDF المنظَّم.',
+    stat_files:'ملفات', stat_langs:'لغات', stat_types:'صيغ',
+    sec_recent:'الملفات الأخيرة', btn_view_all:'عرض الكل',
+    empty_title:'لا ملفات بعد', empty_desc:'ارفع أول ملف تعليمي للبدء',
+    lib_all:'جميع الملفات', sort_newest:'الأحدث', sort_oldest:'الأقدم',
+    sort_name:'الاسم أ–ي', sort_lang:'اللغة',
+    upload_title:'رفع ملف تعليمي',
+    drop_title:'اسحب الملفات هنا أو انقر للتصفح',
+    drop_desc:'يدعم: .md .pdf .txt .py .js .rs .go .cpp .cs .html .java والمزيد',
+    file_details:'تفاصيل الملف', lbl_title:'العنوان', lbl_desc:'الوصف',
+    lbl_lang:'لغة البرمجة', lbl_tags:'الوسوم (مفصولة بفاصلة)',
+    btn_save:'حفظ الملف', btn_cancel:'إلغاء', btn_upload:'رفع',
+    settings_title:'الإعدادات',
+    set_appearance:'المظهر', set_dark_mode:'الوضع المظلم', set_dark_desc:'استخدم الثيم الداكن',
+    set_font:'حجم الخط', set_lang:'اللغة', set_ui_lang:'لغة الواجهة',
+    set_content_lang:'لغة المحتوى', set_content_desc:'يُعرض المحتوى باللغة المختارة',
+    set_data:'إدارة البيانات', set_export:'تصدير جميع البيانات', set_export_desc:'تحميل كنسخة احتياطية JSON',
+    set_import:'استيراد البيانات', set_import_desc:'استعادة من نسخة احتياطية JSON',
+    set_clear:'مسح جميع البيانات', set_clear_desc:'حذف جميع الملفات نهائياً',
+    set_about:'حول', set_storage:'مساحة مستخدمة', set_files_count:'إجمالي الملفات',
+    btn_change:'تغيير', btn_export:'تصدير', btn_import:'استيراد', btn_clear:'مسح',
+    tab_preview:'معاينة', tab_source:'الكود المصدري',
+    lang_select:'اختر اللغة', lang_desc:'سيُعرض جميع المحتوى باللغة المختارة',
+    btn_apply:'تطبيق', search_placeholder:'ابحث في الملفات...',
+  },
+  fr: {
+    nav_main:'Principal', nav_home:'Accueil', nav_library:'Bibliothèque',
+    nav_upload:'Télécharger', nav_categories:'Catégories', cat_other:'Autre',
+    nav_tools:'Outils', nav_settings:'Paramètres', nav_language:'Langue',
+    nav_export:'Exporter', nav_import:'Importer',
+    hero_tag:'Plateforme Éducative v2.0',
+    hero_title:'Apprenez à coder.<br>Maîtrisez la Stack.',
+    hero_desc:'Votre serveur privé pour les fichiers éducatifs de programmation.',
+    stat_files:'Fichiers', stat_langs:'Langages', stat_types:'Formats',
+    sec_recent:'Fichiers récents', btn_view_all:'Voir tout',
+    empty_title:'Aucun fichier', empty_desc:'Téléchargez votre premier fichier éducatif',
+    lib_all:'Tous les fichiers', sort_newest:'Plus récent', sort_oldest:'Plus ancien',
+    sort_name:'Nom A–Z', sort_lang:'Langage',
+    upload_title:'Télécharger un fichier éducatif',
+    drop_title:'Glissez des fichiers ici ou cliquez pour parcourir',
+    drop_desc:'Prend en charge: .md .pdf .txt .py .js et plus',
+    file_details:'Détails du fichier', lbl_title:'Titre', lbl_desc:'Description',
+    lbl_lang:'Langage de programmation', lbl_tags:'Tags (séparés par des virgules)',
+    btn_save:'Enregistrer', btn_cancel:'Annuler', btn_upload:'Télécharger',
+    settings_title:'Paramètres',
+    set_appearance:'Apparence', set_dark_mode:'Mode sombre', set_dark_desc:'Utiliser le thème sombre',
+    set_font:'Taille de police', set_lang:'Langue', set_ui_lang:'Langue de l\'interface',
+    set_content_lang:'Langue du contenu', set_content_desc:'Fichiers affichés dans la langue sélectionnée',
+    set_data:'Gestion des données', set_export:'Exporter toutes les données', set_export_desc:'Télécharger comme sauvegarde JSON',
+    set_import:'Importer des données', set_import_desc:'Restaurer depuis une sauvegarde JSON',
+    set_clear:'Effacer toutes les données', set_clear_desc:'Supprimer définitivement tous les fichiers',
+    set_about:'À propos', set_storage:'Espace utilisé', set_files_count:'Total des fichiers',
+    btn_change:'Changer', btn_export:'Exporter', btn_import:'Importer', btn_clear:'Effacer',
+    tab_preview:'Aperçu', tab_source:'Source',
+    lang_select:'Sélectionner la langue', lang_desc:'Tout le contenu sera affiché dans la langue sélectionnée',
+    btn_apply:'Appliquer', search_placeholder:'Rechercher des fichiers...',
+  },
+  de: {
+    nav_main:'Hauptmenü', nav_home:'Startseite', nav_library:'Bibliothek',
+    nav_upload:'Dateien hochladen', nav_categories:'Kategorien', cat_other:'Sonstige',
+    nav_tools:'Werkzeuge', nav_settings:'Einstellungen', nav_language:'Sprache',
+    nav_export:'Daten exportieren', nav_import:'Daten importieren',
+    hero_tag:'Lernplattform v2.0',
+    hero_title:'Programmieren lernen.<br>Den Stack meistern.',
+    hero_desc:'Ihr privater Server für Lern-Programmierdateien.',
+    stat_files:'Dateien', stat_langs:'Sprachen', stat_types:'Formate',
+    sec_recent:'Aktuelle Dateien', btn_view_all:'Alle anzeigen',
+    empty_title:'Keine Dateien', empty_desc:'Laden Sie Ihre erste Lern-Datei hoch',
+    lib_all:'Alle Dateien', sort_newest:'Neueste', sort_oldest:'Älteste', sort_name:'Name A–Z', sort_lang:'Sprache',
+    upload_title:'Lern-Datei hochladen', drop_title:'Dateien hier ablegen oder klicken', drop_desc:'Unterstützt: .md .pdf .txt .py .js und mehr',
+    file_details:'Dateidetails', lbl_title:'Titel', lbl_desc:'Beschreibung', lbl_lang:'Programmiersprache', lbl_tags:'Tags (kommagetrennt)',
+    btn_save:'Speichern', btn_cancel:'Abbrechen', btn_upload:'Hochladen',
+    settings_title:'Einstellungen', set_appearance:'Erscheinungsbild', set_dark_mode:'Dunkelmodus', set_dark_desc:'Dunkles Theme verwenden',
+    set_font:'Schriftgröße', set_lang:'Sprache', set_ui_lang:'Oberflächensprache',
+    set_content_lang:'Inhaltssprache', set_content_desc:'Dateien in ausgewählter Sprache',
+    set_data:'Datenverwaltung', set_export:'Alle Daten exportieren', set_export_desc:'Als JSON herunterladen',
+    set_import:'Daten importieren', set_import_desc:'Aus JSON-Backup wiederherstellen',
+    set_clear:'Alle Daten löschen', set_clear_desc:'Dateien dauerhaft löschen',
+    set_about:'Über', set_storage:'Genutzter Speicher', set_files_count:'Dateien gesamt',
+    btn_change:'Ändern', btn_export:'Exportieren', btn_import:'Importieren', btn_clear:'Löschen',
+    tab_preview:'Vorschau', tab_source:'Quellcode',
+    lang_select:'Sprache wählen', lang_desc:'Alle Inhalte werden in der ausgewählten Sprache angezeigt',
+    btn_apply:'Anwenden', search_placeholder:'Dateien suchen...',
+  },
+  ru: {
+    nav_main:'Главное', nav_home:'Главная', nav_library:'Библиотека',
+    nav_upload:'Загрузить файлы', nav_categories:'Категории', cat_other:'Другое',
+    nav_tools:'Инструменты', nav_settings:'Настройки', nav_language:'Язык',
+    nav_export:'Экспорт данных', nav_import:'Импорт данных',
+    hero_tag:'Образовательная платформа v2.0',
+    hero_title:'Учись программировать.<br>Освой стек.',
+    hero_desc:'Ваш личный сервер для учебных файлов по программированию.',
+    stat_files:'Файлы', stat_langs:'Языки', stat_types:'Форматы',
+    sec_recent:'Последние файлы', btn_view_all:'Все',
+    empty_title:'Нет файлов', empty_desc:'Загрузите первый учебный файл',
+    lib_all:'Все файлы', sort_newest:'Новые', sort_oldest:'Старые', sort_name:'Имя А–Я', sort_lang:'Язык',
+    upload_title:'Загрузить учебный файл', drop_title:'Перетащите файлы или нажмите для выбора', drop_desc:'Поддержка: .md .pdf .txt .py .js и другие',
+    file_details:'Детали файла', lbl_title:'Название', lbl_desc:'Описание', lbl_lang:'Язык программирования', lbl_tags:'Теги (через запятую)',
+    btn_save:'Сохранить', btn_cancel:'Отмена', btn_upload:'Загрузить',
+    settings_title:'Настройки', set_appearance:'Внешний вид', set_dark_mode:'Тёмная тема', set_dark_desc:'Использовать тёмную тему',
+    set_font:'Размер шрифта', set_lang:'Язык', set_ui_lang:'Язык интерфейса',
+    set_content_lang:'Язык контента', set_content_desc:'Файлы в выбранном языке',
+    set_data:'Управление данными', set_export:'Экспортировать все', set_export_desc:'Скачать JSON-бэкап',
+    set_import:'Импорт данных', set_import_desc:'Восстановить из JSON',
+    set_clear:'Удалить все данные', set_clear_desc:'Удалить файлы навсегда',
+    set_about:'О приложении', set_storage:'Использовано', set_files_count:'Всего файлов',
+    btn_change:'Изменить', btn_export:'Экспорт', btn_import:'Импорт', btn_clear:'Очистить',
+    tab_preview:'Просмотр', tab_source:'Исходный код',
+    lang_select:'Выбор языка', lang_desc:'Весь контент будет отображаться на выбранном языке',
+    btn_apply:'Применить', search_placeholder:'Поиск файлов...',
+  },
+  zh: {
+    nav_main:'主菜单', nav_home:'首页', nav_library:'文件库',
+    nav_upload:'上传文件', nav_categories:'分类', cat_other:'其他',
+    nav_tools:'工具', nav_settings:'设置', nav_language:'语言',
+    nav_export:'导出数据', nav_import:'导入数据',
+    hero_tag:'学习平台 v2.0',
+    hero_title:'学习编程。<br>掌握技术栈。',
+    hero_desc:'您的私人编程教育文件服务器。',
+    stat_files:'文件', stat_langs:'语言', stat_types:'格式',
+    sec_recent:'最近文件', btn_view_all:'查看全部',
+    empty_title:'暂无文件', empty_desc:'上传您的第一个教育文件',
+    lib_all:'所有文件', sort_newest:'最新', sort_oldest:'最旧', sort_name:'名称 A–Z', sort_lang:'语言',
+    upload_title:'上传教育文件', drop_title:'拖放文件或点击浏览', drop_desc:'支持: .md .pdf .txt .py .js 等',
+    file_details:'文件详情', lbl_title:'标题', lbl_desc:'描述', lbl_lang:'编程语言', lbl_tags:'标签（逗号分隔）',
+    btn_save:'保存文件', btn_cancel:'取消', btn_upload:'上传',
+    settings_title:'设置', set_appearance:'外观', set_dark_mode:'深色模式', set_dark_desc:'使用深色主题',
+    set_font:'字体大小', set_lang:'语言', set_ui_lang:'界面语言',
+    set_content_lang:'内容语言', set_content_desc:'以选定语言显示文件',
+    set_data:'数据管理', set_export:'导出所有数据', set_export_desc:'下载为JSON备份',
+    set_import:'导入数据', set_import_desc:'从JSON备份恢复',
+    set_clear:'清除所有数据', set_clear_desc:'永久删除所有文件',
+    set_about:'关于', set_storage:'已用存储', set_files_count:'文件总数',
+    btn_change:'更改', btn_export:'导出', btn_import:'导入', btn_clear:'清除',
+    tab_preview:'预览', tab_source:'源代码',
+    lang_select:'选择语言', lang_desc:'所有内容将以所选语言显示',
+    btn_apply:'应用', search_placeholder:'搜索文件...',
+  },
+  ja: {
+    nav_main:'メイン', nav_home:'ホーム', nav_library:'ライブラリ',
+    nav_upload:'ファイルをアップロード', nav_categories:'カテゴリー', cat_other:'その他',
+    nav_tools:'ツール', nav_settings:'設定', nav_language:'言語',
+    nav_export:'データをエクスポート', nav_import:'データをインポート',
+    hero_tag:'学習プラットフォーム v2.0',
+    hero_title:'コードを学ぼう。<br>スタックをマスターしよう。',
+    hero_desc:'プログラミング教育ファイルのプライベートサーバー。',
+    stat_files:'ファイル', stat_langs:'言語', stat_types:'形式',
+    sec_recent:'最近のファイル', btn_view_all:'すべて見る',
+    empty_title:'ファイルなし', empty_desc:'最初の教育ファイルをアップロード',
+    lib_all:'すべてのファイル', sort_newest:'新しい順', sort_oldest:'古い順', sort_name:'名前 A–Z', sort_lang:'言語',
+    upload_title:'教育ファイルをアップロード', drop_title:'ここにファイルをドロップまたはクリック', drop_desc:'対応: .md .pdf .txt .py .js など',
+    file_details:'ファイル詳細', lbl_title:'タイトル', lbl_desc:'説明', lbl_lang:'プログラミング言語', lbl_tags:'タグ（カンマ区切り）',
+    btn_save:'保存', btn_cancel:'キャンセル', btn_upload:'アップロード',
+    settings_title:'設定', set_appearance:'外観', set_dark_mode:'ダークモード', set_dark_desc:'ダークテーマを使用',
+    set_font:'フォントサイズ', set_lang:'言語', set_ui_lang:'インターフェース言語',
+    set_content_lang:'コンテンツ言語', set_content_desc:'選択した言語でファイルを表示',
+    set_data:'データ管理', set_export:'すべてのデータをエクスポート', set_export_desc:'JSONバックアップとしてダウンロード',
+    set_import:'データをインポート', set_import_desc:'JSONバックアップから復元',
+    set_clear:'すべてのデータを削除', set_clear_desc:'ファイルを完全に削除',
+    set_about:'について', set_storage:'使用容量', set_files_count:'ファイル総数',
+    btn_change:'変更', btn_export:'エクスポート', btn_import:'インポート', btn_clear:'削除',
+    tab_preview:'プレビュー', tab_source:'ソース',
+    lang_select:'言語を選択', lang_desc:'すべてのコンテンツが選択した言語で表示されます',
+    btn_apply:'適用', search_placeholder:'ファイルを検索...',
+  },
+};
+
+// Fallback to en
+function t(key) {
+  const lang = selectedLang;
+  const dict = TRANSLATIONS[lang] || TRANSLATIONS['en'];
+  return dict[key] || TRANSLATIONS['en'][key] || key;
+}
+
+function applyTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.innerHTML = t(key);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    el.placeholder = t(key);
+  });
+  // RTL for Arabic
+  document.documentElement.dir = selectedLang === 'ar' ? 'rtl' : 'ltr';
+  // Update lang label
+  const langObj = LANGS.find(l => l.code === selectedLang) || LANGS[0];
+  document.getElementById('current-lang-label').textContent = langObj.label;
+  document.getElementById('content-lang-label').textContent = langObj.code.toUpperCase();
+}
+
+// ===========================
+// NAVIGATION
+// ===========================
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name)?.classList.add('active');
+  document.querySelector(`[data-page="${name}"]`)?.classList.add('active');
+  filterLang = null;
+  if (name === 'library') renderLibrary();
+  if (name === 'settings') updateSettingsPage();
+  closeSidebar();
+}
+
+function filterCategory(lang) {
+  filterLang = lang;
+  showPage('library');
+  document.getElementById('library-title').textContent = lang;
+}
+
+// ===========================
+// THEME
+// ===========================
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('theme-icon').textContent = isDark ? '🌙' : '☀️';
+  document.getElementById('dark-toggle').classList.toggle('on', !isDark);
+  settings.theme = isDark ? 'light' : 'dark';
+  saveSettings();
+}
+
+function initTheme() {
+  const theme = settings.theme || 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('theme-icon').textContent = theme === 'dark' ? '☀️' : '🌙';
+  document.getElementById('dark-toggle').classList.toggle('on', theme === 'dark');
+}
+
+// ===========================
+// FILE OPERATIONS
+// ===========================
+function handleFileSelect(input) {
+  const file = input.files[0];
+  if (file) prepareUpload(file);
+}
+
+function handleDrop(event) {
+  event.preventDefault();
+  document.getElementById('drop-zone').classList.remove('dragover');
+  const file = event.dataTransfer.files[0];
+  if (file) prepareUpload(file);
+}
+
+function prepareUpload(file) {
+  pendingFile = file;
+  document.getElementById('up-title').value = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+  document.getElementById('upload-form').style.display = 'block';
+  document.getElementById('drop-zone').style.display = 'none';
+}
+
+function cancelUpload() {
+  pendingFile = null;
+  document.getElementById('upload-form').style.display = 'none';
+  document.getElementById('drop-zone').style.display = 'block';
+  document.getElementById('file-input').value = '';
+}
+
+async function saveFile() {
+  if (!pendingFile) return;
+
+  const title = document.getElementById('up-title').value.trim();
+  const desc = document.getElementById('up-desc').value.trim();
+  const lang = document.getElementById('up-lang').value;
+  const tags = document.getElementById('up-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+
+  if (!title) { toast('Please enter a title', 'error'); return; }
+
+  const reader = new FileReader();
+  const ext = pendingFile.name.split('.').pop().toLowerCase();
+  const isPdf = ext === 'pdf';
+
+  reader.onload = (e) => {
+    const fileData = {
+      id: Date.now().toString(),
+      title,
+      desc,
+      lang,
+      tags,
+      ext,
+      name: pendingFile.name,
+      size: pendingFile.size,
+      content: e.target.result,
+      isPdf,
+      uploadedAt: new Date().toISOString(),
+    };
+    files.unshift(fileData);
+    saveFiles();
+    updateStats();
+    cancelUpload();
+    showPage('library');
+    toast(t('btn_save') + ': ' + title, 'success');
+  };
+
+  if (isPdf) {
+    reader.readAsDataURL(pendingFile);
+  } else {
+    reader.readAsText(pendingFile);
+  }
+}
+
+function saveFiles() {
+  try {
+    localStorage.setItem(DB_KEY, JSON.stringify(files));
+  } catch(e) {
+    toast('Storage full! Export and clear some files.', 'error');
+  }
+}
+
+function saveSettings() {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+function deleteFile(id, event) {
+  event.stopPropagation();
+  if (!confirm('Delete this file?')) return;
+  files = files.filter(f => f.id !== id);
+  saveFiles();
+  updateStats();
+  renderLibrary();
+  renderRecent();
+  toast('File deleted', 'info');
+}
+
+// ===========================
+// RENDERING
+// ===========================
+function getLangBadgeClass(lang) {
+  const map = { Python:'badge-py', JavaScript:'badge-js', TypeScript:'badge-js',
+    Rust:'badge-rust', Go:'badge-go', 'C++':'badge-cpp', 'C#':'badge-cs',
+    Java:'badge-cs', PDF:'badge-pdf' };
+  return map[lang] || 'badge-md';
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1048576).toFixed(1) + ' MB';
+}
+
+function timeAgo(iso) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff/60000);
+  const h = Math.floor(m/60);
+  const d = Math.floor(h/24);
+  if (d>0) return d+'d ago';
+  if (h>0) return h+'h ago';
+  if (m>0) return m+'m ago';
+  return 'just now';
+}
+
+function createCard(file, showDelete=true) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.onclick = () => openViewer(file.id);
+
+  const badgeClass = getLangBadgeClass(file.lang);
+  const extBadge = file.ext === 'pdf' ? 'badge-pdf' : 'badge-md';
+
+  card.innerHTML = `
+    <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+      <span class="card-badge ${badgeClass}">${file.lang}</span>
+      <span class="card-badge ${extBadge}">.${file.ext}</span>
+    </div>
+    <h3>${file.title}</h3>
+    ${file.desc ? `<p>${file.desc.substring(0,100)}${file.desc.length>100?'…':''}</p>` : '<p style="color:var(--text-muted);font-style:italic">No description</p>'}
+    ${file.tags.length ? `<div class="tags">${file.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>` : ''}
+    <div class="progress-bar" style="margin-bottom:0"><div class="progress-fill" style="width:${Math.min(100,file.size/1000)}%"></div></div>
+    <div class="card-meta" style="margin-top:10px">
+      <span>${formatSize(file.size)}</span>
+      <span class="dot"></span>
+      <span>${timeAgo(file.uploadedAt)}</span>
+      <span class="dot"></span>
+      <span>${file.name}</span>
+    </div>
+    <div class="card-actions">
+      <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openViewer('${file.id}')">👁 ${t('tab_preview')}</button>
+      <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();downloadFile('${file.id}')">⬇</button>
+      ${showDelete ? `<button class="btn btn-sm" style="background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3)" onclick="deleteFile('${file.id}',event)">🗑</button>` : ''}
+    </div>
+  `;
+  return card;
+}
+
+function renderRecent() {
+  const grid = document.getElementById('recent-grid');
+  grid.innerHTML = '';
+  const recent = files.slice(0,6);
+  if (!recent.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><h3>${t('empty_title')}</h3><p>${t('empty_desc')}</p></div>`;
+    return;
+  }
+  recent.forEach(f => grid.appendChild(createCard(f)));
+}
+
+let currentSearchQuery = '';
+
+function renderLibrary() {
+  const grid = document.getElementById('library-grid');
+  grid.innerHTML = '';
+  const sort = document.getElementById('sort-select').value;
+
+  let list = [...files];
+  if (filterLang) list = list.filter(f => f.lang === filterLang);
+  if (currentSearchQuery) {
+    const q = currentSearchQuery.toLowerCase();
+    list = list.filter(f =>
+      f.title.toLowerCase().includes(q) ||
+      f.desc.toLowerCase().includes(q) ||
+      f.lang.toLowerCase().includes(q) ||
+      f.tags.some(t=>t.toLowerCase().includes(q))
+    );
+  }
+
+  if (sort === 'newest') list.sort((a,b) => new Date(b.uploadedAt)-new Date(a.uploadedAt));
+  if (sort === 'oldest') list.sort((a,b) => new Date(a.uploadedAt)-new Date(b.uploadedAt));
+  if (sort === 'name') list.sort((a,b) => a.title.localeCompare(b.title));
+  if (sort === 'lang') list.sort((a,b) => a.lang.localeCompare(b.lang));
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><h3>${t('empty_title')}</h3><p>${t('empty_desc')}</p></div>`;
+    return;
+  }
+  list.forEach(f => grid.appendChild(createCard(f)));
+}
+
+function searchFiles(query) {
+  currentSearchQuery = query;
+  if (document.getElementById('page-library').classList.contains('active')) {
+    renderLibrary();
+  } else {
+    showPage('library');
+  }
+}
+
+function updateStats() {
+  document.getElementById('stat-files').textContent = files.length;
+  const langs = new Set(files.map(f=>f.lang));
+  document.getElementById('stat-langs').textContent = langs.size;
+  document.getElementById('file-count-badge').textContent = files.length;
+}
+
+// ===========================
+// FILE VIEWER
+// ===========================
+function openViewer(id) {
+  const file = files.find(f => f.id === id);
+  if (!file) return;
+  currentFile = file;
+
+  document.getElementById('viewer-title').textContent = file.title;
+  document.getElementById('viewer-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  switchViewerTab('preview');
+}
+
+function closeViewer(e) {
+  if (e && e.target !== document.getElementById('viewer-overlay')) return;
+  document.getElementById('viewer-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+  currentFile = null;
+}
+
+function switchViewerTab(tab) {
+  currentViewerTab = tab;
+  document.getElementById('tab-preview').classList.toggle('active', tab==='preview');
+  document.getElementById('tab-source').classList.toggle('active', tab==='source');
+
+  const body = document.getElementById('viewer-body');
+
+  if (!currentFile) return;
+
+  if (currentFile.isPdf) {
+    body.className = 'viewer-body';
+    body.innerHTML = `<embed class="pdf-embed" src="${currentFile.content}" type="application/pdf">`;
+    return;
+  }
+
+  if (tab === 'preview') {
+    const ext = currentFile.ext;
+    if (ext === 'md') {
+      body.className = 'viewer-body md-content';
+      body.innerHTML = marked.parse(currentFile.content);
+      body.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+    } else {
+      // Code file - show with syntax highlighting
+      body.className = 'viewer-body code-view';
+      const pre = document.createElement('pre');
+      const code = document.createElement('code');
+      code.textContent = currentFile.content;
+      const langMap = { py:'python', js:'javascript', ts:'typescript', rs:'rust',
+        go:'go', cpp:'cpp', cs:'csharp', java:'java', html:'html', css:'css',
+        rb:'ruby', php:'php', sh:'bash', json:'json', yaml:'yaml', toml:'toml', txt:'plaintext' };
+      code.className = 'language-' + (langMap[currentFile.ext] || 'plaintext');
+      pre.appendChild(code);
+      body.innerHTML = '';
+      body.appendChild(pre);
+      hljs.highlightElement(code);
+    }
+  } else {
+    // Source code view
+    body.className = 'viewer-body code-view';
+    const pre = document.createElement('pre');
+    const code = document.createElement('code');
+    code.textContent = currentFile.content;
+    code.className = 'language-plaintext';
+    pre.appendChild(code);
+    body.innerHTML = '';
+    body.appendChild(pre);
+    hljs.highlightElement(code);
+  }
+}
+
+// ===========================
+// DOWNLOAD
+// ===========================
+function downloadCurrentFile() {
+  if (currentFile) downloadFile(currentFile.id);
+}
+
+function downloadFile(id) {
+  const file = files.find(f=>f.id===id);
+  if (!file) return;
+
+  if (file.isPdf) {
+    const link = document.createElement('a');
+    link.href = file.content;
+    link.download = file.name;
+    link.click();
+  } else {
+    const blob = new Blob([file.content], {type:'text/plain'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = file.name;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+}
+
+// ===========================
+// EXPORT / IMPORT
+// ===========================
+function exportData() {
+  const data = { files, settings, exportedAt: new Date().toISOString(), version: '2.0' };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `hacklearn-backup-${Date.now()}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+  toast('Data exported successfully!', 'success');
+}
+
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.files && Array.isArray(data.files)) {
+        if (confirm(`Import ${data.files.length} files? This will merge with existing files.`)) {
+          const existingIds = new Set(files.map(f=>f.id));
+          const newFiles = data.files.filter(f=>!existingIds.has(f.id));
+          files = [...newFiles, ...files];
+          if (data.settings) { settings = {...settings, ...data.settings}; saveSettings(); }
+          saveFiles();
+          updateStats();
+          renderRecent();
+          toast(`Imported ${newFiles.length} new files!`, 'success');
+        }
+      } else {
+        toast('Invalid backup file format', 'error');
+      }
+    } catch {
+      toast('Failed to parse JSON file', 'error');
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function clearAllData() {
+  if (confirm('Delete ALL files permanently? This cannot be undone.')) {
+    if (confirm('Are you absolutely sure?')) {
+      files = [];
+      saveFiles();
+      updateStats();
+      renderRecent();
+      renderLibrary();
+      toast('All data cleared', 'info');
+    }
+  }
+}
+
+// ===========================
+// LANGUAGE MODAL
+// ===========================
+let tempLang = selectedLang;
+
+function openLangModal() {
+  tempLang = selectedLang;
+  const grid = document.getElementById('lang-grid');
+  grid.innerHTML = LANGS.map(l => `
+    <div class="lang-option ${l.code===selectedLang?'selected':''}" onclick="selectLang('${l.code}',this)">
+      <span class="lang-flag">${l.flag}</span>
+      <span>${l.label}</span>
+    </div>
+  `).join('');
+  document.getElementById('lang-modal').classList.add('open');
+}
+
+function selectLang(code, el) {
+  tempLang = code;
+  document.querySelectorAll('.lang-option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function applyLang() {
+  selectedLang = tempLang;
+  settings.lang = selectedLang;
+  saveSettings();
+  applyTranslations();
+  closeLangModal();
+  updateStats();
+  renderRecent();
+  if (document.getElementById('page-library').classList.contains('active')) renderLibrary();
+  toast('Language updated!', 'success');
+}
+
+function closeLangModal() {
+  document.getElementById('lang-modal').classList.remove('open');
+}
+
+// Click outside modal to close
+document.getElementById('lang-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('lang-modal')) closeLangModal();
+});
+
+// ===========================
+// SETTINGS PAGE
+// ===========================
+function updateSettingsPage() {
+  const storageData = localStorage.getItem(DB_KEY) || '';
+  const kb = (new Blob([storageData]).size / 1024).toFixed(1);
+  document.getElementById('storage-size').textContent = kb + ' KB';
+  document.getElementById('total-files-count').textContent = files.length;
+}
+
+function setFontSize(size) {
+  document.body.style.fontSize = size + 'px';
+  settings.fontSize = size;
+  saveSettings();
+}
+
+// ===========================
+// SIDEBAR MOBILE
+// ===========================
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
+
+// ===========================
+// TOAST
+// ===========================
+function toast(msg, type='info') {
+  const icons = { success:'✅', error:'❌', info:'ℹ️' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icons[type]}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ===========================
+// KEYBOARD SHORTCUTS
+// ===========================
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeViewer();
+    closeLangModal();
+    document.getElementById('modal-overlay')?.classList.remove('open');
+  }
+});
+
+// ===========================
+// DEMO DATA (first load)
+// ===========================
+function loadDemoData() {
+  if (files.length > 0) return;
+  files = [
+    {
+      id: 'demo1',
+      title: 'Python Fundamentals',
+      desc: 'Core concepts of Python programming: variables, loops, functions, and OOP.',
+      lang: 'Python',
+      tags: ['beginner', 'tutorial', 'oop'],
+      ext: 'md',
+      name: 'python-fundamentals.md',
+      size: 2400,
+      content: `# Python Fundamentals\n\nWelcome to **Python Fundamentals**! This guide covers everything you need to get started.\n\n## Variables & Types\n\n\`\`\`python\nname = "Alice"\nage = 30\npi = 3.14\nis_active = True\n\nprint(f"Hello, {name}! You are {age} years old.")\n\`\`\`\n\n## Control Flow\n\n\`\`\`python\nfor i in range(10):\n    if i % 2 == 0:\n        print(f"{i} is even")\n    else:\n        print(f"{i} is odd")\n\`\`\`\n\n## Functions\n\n\`\`\`python\ndef greet(name: str, greeting: str = "Hello") -> str:\n    return f"{greeting}, {name}!"\n\nresult = greet("Bob", greeting="Hi")\nprint(result)\n\`\`\`\n\n## Classes (OOP)\n\n\`\`\`python\nclass Animal:\n    def __init__(self, name: str, species: str):\n        self.name = name\n        self.species = species\n    \n    def speak(self) -> str:\n        return f"{self.name} makes a sound"\n\nclass Dog(Animal):\n    def speak(self) -> str:\n        return f"{self.name} barks: Woof!"\n\ndog = Dog("Rex", "Canis lupus")\nprint(dog.speak())\n\`\`\`\n\n> **Tip:** Python uses indentation (4 spaces) to define code blocks.\n\n## Next Steps\n\n- Learn about list comprehensions\n- Explore modules and packages\n- Study decorators and generators\n`,
+      isPdf: false,
+      uploadedAt: new Date(Date.now() - 86400000).toISOString()
+    },
+    {
+      id: 'demo2',
+      title: 'Rust Memory Safety',
+      desc: 'Understanding ownership, borrowing, and lifetimes in Rust.',
+      lang: 'Rust',
+      tags: ['advanced', 'memory', 'systems'],
+      ext: 'md',
+      name: 'rust-memory-safety.md',
+      size: 1800,
+      content: `# Rust Memory Safety\n\nRust's ownership system prevents memory leaks and data races at compile time.\n\n## Ownership\n\n\`\`\`rust\nfn main() {\n    let s1 = String::from("hello");\n    let s2 = s1; // s1 is moved, no longer valid\n    \n    println!("{}", s2); // ✅ works\n    // println!("{}", s1); // ❌ would not compile\n}\n\`\`\`\n\n## Borrowing\n\n\`\`\`rust\nfn calculate_length(s: &String) -> usize {\n    s.len() // we borrow s, don't own it\n}\n\nfn main() {\n    let s = String::from("hello");\n    let len = calculate_length(&s);\n    println!("Length of '{}' is {}", s, len);\n}\n\`\`\`\n\n## Lifetimes\n\n\`\`\`rust\nfn longest<'a>(x: &'a str, y: &'a str) -> &'a str {\n    if x.len() > y.len() { x } else { y }\n}\n\`\`\`\n\n> Rust guarantees memory safety without a garbage collector!\n`,
+      isPdf: false,
+      uploadedAt: new Date(Date.now() - 3600000).toISOString()
+    },
+    {
+      id: 'demo3',
+      title: 'JavaScript Async/Await',
+      desc: 'Mastering asynchronous programming with Promises and async/await.',
+      lang: 'JavaScript',
+      tags: ['intermediate', 'async', 'es2017'],
+      ext: 'md',
+      name: 'js-async-await.md',
+      size: 1600,
+      content: `# JavaScript Async/Await\n\nModern async programming made simple.\n\n## The Problem with Callbacks\n\n\`\`\`javascript\n// Callback hell\ngetUser(id, (user) => {\n  getOrders(user.id, (orders) => {\n    getProduct(orders[0].productId, (product) => {\n      console.log(product);\n    });\n  });\n});\n\`\`\`\n\n## Promises\n\n\`\`\`javascript\nconst fetchUser = (id) =>\n  new Promise((resolve, reject) => {\n    setTimeout(() => {\n      if (id > 0) resolve({ id, name: 'Alice' });\n      else reject(new Error('Invalid ID'));\n    }, 1000);\n  });\n\nfetchUser(1)\n  .then(user => console.log(user))\n  .catch(err => console.error(err));\n\`\`\`\n\n## Async/Await\n\n\`\`\`javascript\nasync function main() {\n  try {\n    const user = await fetchUser(1);\n    const orders = await fetchOrders(user.id);\n    console.log(\`User \${user.name} has \${orders.length} orders\`);\n  } catch (error) {\n    console.error('Error:', error.message);\n  }\n}\n\nmain();\n\`\`\`\n\n## Parallel Execution\n\n\`\`\`javascript\n// Run multiple promises in parallel\nconst [users, products] = await Promise.all([\n  fetchUsers(),\n  fetchProducts()\n]);\n\`\`\`\n`,
+      isPdf: false,
+      uploadedAt: new Date().toISOString()
+    }
+  ];
+  saveFiles();
+}
+
+// ===========================
+// INIT
+// ===========================
+function init() {
+  loadDemoData();
+  initTheme();
+  applyTranslations();
+  updateStats();
+  renderRecent();
+
+  if (settings.fontSize) {
+    document.body.style.fontSize = settings.fontSize + 'px';
+    const sel = document.getElementById('font-size-select');
+    if (sel) sel.value = settings.fontSize;
+  }
+
+  // Marked config
+  marked.setOptions({ breaks: true, gfm: true });
+}
+
+init();
+</script>
+</body>
+</html>
